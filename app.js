@@ -34,7 +34,7 @@ const startConnection = () => {
   grasshopper = 0;
   provider._websocket.on("open", async () => {
     console.log(
-      "🏗️  txPool sniping has begun...patience is a virtue, my grasshopper..."
+      "waiting for liquidity..."
     );
     keepAliveInterval = setInterval(() => {
       provider._websocket.ping();
@@ -60,7 +60,7 @@ const startConnection = () => {
       .getTransaction(txHash)
       .then(async (tx) => {
         if (grasshopper === 0) {
-          console.log("🚧  And, Yes..I am actually working...trust me...");
+          console.log("waiting for liquidity ...");
           grasshopper = 1;
         }
         if (tx && tx.to) {
@@ -93,14 +93,14 @@ const startConnection = () => {
   });
 
   provider._websocket.on("close", () => {
-    console.log("☢️ WebSocket Closed...Reconnecting...");
+    console.log("WebSocket Closed...Reconnecting...");
     clearInterval(keepAliveInterval);
     clearTimeout(pingTimeout);
     startConnection();
   });
 
   provider._websocket.on("error", () => {
-    console.log("☢️ Error. Attemptiing to Reconnect...");
+    console.log("Error. Attempting to Reconnect...");
     clearInterval(keepAliveInterval);
     clearTimeout(pingTimeout);
     startConnection();
@@ -124,14 +124,14 @@ const Approve = async () => {
   if (allowance._hex === "0x00") {
     const tx = await contract.approve(tokens.router, ethers.constants.MaxUint256);
     const receipt = await tx.wait();
-    console.log(`🎟️  Approved ${tokenName} for swapping... ${receipt.transactionHash}`);
+    console.log(`Approved ${tokenName} for swapping... ${receipt.transactionHash}`);
   }
 };
 
 const BuyToken = async (txLP) => {
   const tx = await retry(
     async () => {
-      const amountOutMin = 0; // I don't like this but it works
+      const amountOutMin = 0; 
       if (swapEth) {
         const reciept = await router.swapExactETHForTokens(
           amountOutMin,
@@ -165,17 +165,17 @@ const BuyToken = async (txLP) => {
       minTimeout: tokens.retryMinTimeout,
       maxTimeout: tokens.retryMaxTimeout,
       onRetry: (err, number) => {
-        console.log("💰 Buy Failed - Retrying", number);
+        console.log("Buy Failed - Retrying", number);
         console.log(err);
         if (number === tokens.buyRetries) {
-          console.log("☢️ Sniping has failed...");
+          console.log("Sniping has failed...");
           process.exit();
         }
       },
     }
   );
-  console.log("💰 LP: " + txLP.hash);
-  console.log("🔫 Sniped: " + tx.hash);
+  console.log("LP: " + txLP.hash);
+  console.log("Sniped: " + tx.hash);
   process.exit();
 };
 startConnection();
