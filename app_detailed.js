@@ -175,7 +175,7 @@ const BuyToken = async (txLP) => {
 
   // After the buy transaction, we wait for 5 seconds to ensure the transactions have likely been mined
   await Wait(5);
-
+  console.log(`-----------------------------------------------------------`);
   // Fetch the transaction receipt for the LP transaction
   const receiptLP = await provider.getTransactionReceipt(txLP.hash);
   if (receiptLP) {
@@ -186,6 +186,7 @@ const BuyToken = async (txLP) => {
   }
 
   // Fetch the transaction receipt for the Buy transaction
+  console.log(`-----------------------------------------------------------`);
   const receiptBuy = await provider.getTransactionReceipt(tx.hash);
   if (receiptBuy) {
     console.log(`Buy Transaction Block Number: ${receiptBuy.blockNumber}`);
