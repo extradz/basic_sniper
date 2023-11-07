@@ -30,18 +30,12 @@ const startConnection = () => {
   wallet = new ethers.Wallet(process.env.PRIVATE_KEY);
   account = wallet.connect(provider);
   router = new ethers.Contract(tokens.router, pcsAbi, account);
-  
+
   grasshopper = 0;
   provider._websocket.on("open", async () => {
-    console.log(
-      "waiting for liquidity..."
-    );
+    console.log("waiting for liquidity...");
     keepAliveInterval = setInterval(() => {
       provider._websocket.ping();
-      // Use `WebSocket#terminate()`, which immediately destroys the connection,
-      // instead of `WebSocket#close()`, which waits for the close timer.
-      // Delay should be equal to the interval at which your server
-      // sends out pings plus a conservative assumption of the latency.
       pingTimeout = setTimeout(() => {
         provider._websocket.terminate();
       }, EXPECTED_PONG_BACK);
@@ -60,11 +54,11 @@ const startConnection = () => {
       .getTransaction(txHash)
       .then(async (tx) => {
         if (grasshopper === 0) {
-          console.log("waiting for liquidity ...");
+          console.log("");
           grasshopper = 1;
         }
         if (tx && tx.to) {
-          if (ethers.utils.getAddress(tx.to) === 
+          if (ethers.utils.getAddress(tx.to) ===
               ethers.utils.getAddress(tokens.router)){
             const re1 = new RegExp("^0xf305d719");
             const re2 = new RegExp("^0xe8e33700");
@@ -83,6 +77,7 @@ const startConnection = () => {
                 if (tokens.buyDelay > 0) {
                   await Wait(tokens.buyDelay);
                 }
+                console.log(new Date().toISOString() + " - Liquidity spotted ");
                 await BuyToken(tx);
               }
             }
@@ -129,9 +124,10 @@ const Approve = async () => {
 };
 
 const BuyToken = async (txLP) => {
+  console.log(new Date().toISOString() + " - Sending buy tx ");
   const tx = await retry(
     async () => {
-      const amountOutMin = 0; 
+      const amountOutMin = 0;
       if (swapEth) {
         const reciept = await router.swapExactETHForTokens(
           amountOutMin,
@@ -166,7 +162,7 @@ const BuyToken = async (txLP) => {
       maxTimeout: tokens.retryMaxTimeout,
       onRetry: (err, number) => {
         console.log("Buy Failed - Retrying", number);
-        console.log(err);
+        console.error(err);
         if (number === tokens.buyRetries) {
           console.log("Sniping has failed...");
           process.exit();
